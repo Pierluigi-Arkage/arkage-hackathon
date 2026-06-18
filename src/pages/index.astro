@@ -6,7 +6,7 @@ const pillars = await sanityClient.fetch(`*[_type == "pillar"] | order(order asc
 const industries = await sanityClient.fetch(`*[_type == "industry"] | order(title asc) {title, description, clients, slug}`);
 
 const fallbackPillars = [
-  { title: "Nova", tagline: "A Team", description: "A dedicated team that runs your content operations end to end — always-on creativity, campaign amplification, platform management. Inside your tools, your calendar, your visibility. Sprint after sprint.", slug: { current: "nova" } },
+  { title: "Nova", tagline: "A Team", description: ""},
   { title: "Talents", tagline: "A Person", description: "Rigorously selected, AI-trained creative professionals integrated into your team. No selection fee. You pay only for days actually worked, with full administrative and contractual coverage from Arkage.", slug: { current: "talents" } },
   { title: "Edge", tagline: "A Program", description: "Learning designed as experience: workshops, hackathons, gamification and transformation programs. Two deep verticals — AI adoption and Customer Experience — built on 25 years of communication craft.", slug: { current: "edge" } },
   { title: "Solutions", tagline: "A Product", description: "Custom AI tools and platforms, designed and built with you, starting from fast measurable pilots. No off-the-shelf licenses. No eighteen-month roadmaps. Proven capability, compounding.", slug: { current: "solutions" } }
