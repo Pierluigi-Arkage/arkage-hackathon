@@ -1,0 +1,332 @@
+---
+// src/pages/talents.astro
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Talents — Embedded Teams · Arkage</title>
+    <meta name="description" content="Rigorously selected, AI-trained creative professionals embedded in your team. No selection fee. Pay only for days worked." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --black: #0A0A0A; --ivory: #F5F0E8; --white: #FFFFFF;
+        --sand: #C8B89A; --mid: #3D3D3D; --muted: #888880;
+        --border: rgba(10,10,10,0.12);
+        --font-d: 'Syne', sans-serif; --font-b: 'Inter', sans-serif;
+        --max: 1320px; --px: clamp(1.5rem, 5vw, 5rem); --py: clamp(4rem, 8vw, 8rem);
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body { font-family: var(--font-b); background: var(--ivory); color: var(--black); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+      a { color: inherit; text-decoration: none; }
+      .wrap { max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
+
+      nav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.5rem var(--px); background: rgba(245,240,232,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+      .nav-logo { font-family: var(--font-d); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+      .nav-links { display: flex; gap: 2.5rem; list-style: none; font-size: 0.85rem; font-weight: 500; }
+      .nav-links a { opacity: 0.55; transition: opacity 0.2s; }
+      .nav-links a:hover, .nav-links a.active { opacity: 1; }
+      .nav-cta { font-family: var(--font-d); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.65rem 1.4rem; background: var(--black); color: var(--ivory); transition: background 0.2s; }
+      .nav-cta:hover { background: var(--mid); }
+
+      .page-hero { padding-top: 10rem; padding-bottom: var(--py); padding-inline: var(--px); max-width: var(--max); margin-inline: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end; }
+      .page-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+      .page-eyebrow::before { content: '02'; font-family: var(--font-d); font-weight: 800; font-size: 0.65rem; color: var(--sand); }
+      .page-title { font-family: var(--font-d); font-weight: 800; font-size: clamp(3.5rem, 8vw, 8rem); letter-spacing: -0.04em; line-height: 0.9; }
+      .page-title em { display: block; font-style: normal; font-size: clamp(1rem, 2vw, 1.5rem); font-weight: 400; letter-spacing: -0.01em; color: var(--muted); margin-top: 1rem; font-family: var(--font-b); }
+      .page-standfirst { font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 300; line-height: 1.7; color: var(--mid); border-left: 2px solid var(--sand); padding-left: 1.5rem; }
+
+      .content-section { padding-block: var(--py); border-top: 1px solid var(--border); }
+      .content-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; }
+      .content-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding-top: 0.3rem; }
+      .content-body { font-size: 1rem; font-weight: 300; line-height: 1.8; color: var(--mid); }
+      .content-body p + p { margin-top: 1.25rem; }
+      .content-body strong { font-weight: 500; color: var(--black); }
+
+      /* STAT NUMBERS */
+      .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 4rem; padding-top: 4rem; border-top: 1px solid var(--border); }
+      .stat-item { display: flex; flex-direction: column; gap: 0.5rem; }
+      .stat-number { font-family: var(--font-d); font-weight: 800; font-size: clamp(2.5rem, 5vw, 4rem); letter-spacing: -0.04em; line-height: 1; }
+      .stat-label { font-size: 0.8rem; font-weight: 300; color: var(--muted); line-height: 1.5; }
+
+      /* PROCESS TIMELINE */
+      .timeline { margin-top: 3rem; display: flex; flex-direction: column; gap: 0; }
+      .timeline-step { display: grid; grid-template-columns: auto 1fr; gap: 2rem; padding-block: 1.75rem; border-top: 1px solid var(--border); align-items: start; }
+      .timeline-step:last-child { border-bottom: 1px solid var(--border); }
+      .timeline-week { font-family: var(--font-d); font-weight: 700; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--sand); padding-top: 0.15rem; white-space: nowrap; }
+      .timeline-content-title { font-family: var(--font-d); font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+      .timeline-content-desc { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--mid); }
+
+      /* COMMERCIAL MODEL */
+      .model-section { padding-block: var(--py); background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .model-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; }
+      .model-points { display: flex; flex-direction: column; gap: 1rem; margin-top: 0; }
+      .model-point { display: flex; gap: 1rem; align-items: flex-start; padding: 1.25rem; background: var(--ivory); }
+      .model-point-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+      .model-point-text { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--mid); }
+      .model-point-text strong { font-weight: 500; color: var(--black); display: block; margin-bottom: 0.25rem; }
+
+      .proof-section { padding-block: var(--py); background: var(--black); color: var(--ivory); }
+      .proof-inner { max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
+      .proof-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 3rem; display: flex; align-items: center; gap: 1rem; }
+      .proof-label::after { content: ''; flex: 1; height: 1px; background: rgba(245,240,232,0.1); }
+      .proof-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 2rem; }
+      .proof-headline em { font-style: normal; color: var(--sand); }
+      .proof-body { font-size: 1rem; font-weight: 300; line-height: 1.8; color: rgba(245,240,232,0.6); max-width: 70ch; }
+      .proof-body p + p { margin-top: 1.25rem; }
+      .proof-closing { margin-top: 2.5rem; font-family: var(--font-d); font-weight: 700; font-size: 0.9rem; color: var(--sand); font-style: italic; }
+
+      .fit-section { padding-block: var(--py); border-top: 1px solid var(--border); }
+      .fit-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+      .fit-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.03em; line-height: 1.05; }
+      .fit-body { font-size: 1rem; font-weight: 300; line-height: 1.8; color: var(--mid); }
+      .fit-closing { margin-top: 2rem; font-family: var(--font-d); font-weight: 700; font-size: 1rem; color: var(--black); font-style: italic; }
+
+      .cta-band { background: var(--sand); }
+      .cta-inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding-block: clamp(3rem, 5vw, 5rem); max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
+      .cta-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.5rem); letter-spacing: -0.03em; line-height: 1.1; color: var(--black); }
+      .cta-btn { flex-shrink: 0; font-family: var(--font-d); font-weight: 700; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 1rem 2.2rem; background: var(--black); color: var(--ivory); transition: background 0.2s; white-space: nowrap; }
+      .cta-btn:hover { background: var(--mid); }
+
+      footer { background: var(--black); color: var(--ivory); border-top: 1px solid rgba(245,240,232,0.08); }
+      .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-block: 4rem; }
+      .footer-brand { font-family: var(--font-d); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+      .footer-tagline { font-size: 0.85rem; font-weight: 300; color: rgba(245,240,232,0.4); line-height: 1.6; max-width: 26ch; }
+      .footer-col-title { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 1.2rem; }
+      .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+      .footer-links a { font-size: 0.875rem; font-weight: 300; opacity: 0.6; transition: opacity 0.2s; }
+      .footer-links a:hover { opacity: 1; }
+      .footer-bottom { border-top: 1px solid rgba(245,240,232,0.08); padding-block: 1.5rem; display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(245,240,232,0.25); }
+
+      @media (max-width: 900px) {
+        .page-hero { grid-template-columns: 1fr; gap: 2rem; }
+        .content-grid, .model-grid, .fit-inner { grid-template-columns: 1fr; gap: 2rem; }
+        .stats-row { grid-template-columns: 1fr 1fr; }
+        .footer-inner { grid-template-columns: 1fr 1fr; }
+        .cta-inner { flex-direction: column; align-items: flex-start; }
+      }
+      @media (max-width: 600px) {
+        .nav-links { display: none; }
+        .stats-row { grid-template-columns: 1fr; }
+        .footer-inner { grid-template-columns: 1fr; }
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-up.visible { opacity: 1; transform: none; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav>
+      <a href="/" class="nav-logo">Arkage</a>
+      <ul class="nav-links">
+        <li><a href="/nova">Nova</a></li>
+        <li><a href="/talents" class="active">Talents</a></li>
+        <li><a href="/edge">Edge</a></li>
+        <li><a href="/solutions">Solutions</a></li>
+      </ul>
+      <a href="/contact" class="nav-cta">Get in touch</a>
+    </nav>
+
+    <div class="page-hero">
+      <div>
+        <p class="page-eyebrow">Engagement Model 02</p>
+        <h1 class="page-title">
+          Talents
+          <em>Embedded Creative Professionals</em>
+        </h1>
+      </div>
+      <p class="page-standfirst">
+        The staffing partner the creative industry was missing: rigorously selected, AI-trained professionals embedded in your team. No selection fee. You pay only for days actually worked.
+      </p>
+    </div>
+
+    <!-- THE GAP -->
+    <section class="content-section">
+      <div class="wrap">
+        <div class="content-grid fade-up">
+          <p class="content-label">The gap</p>
+          <div class="content-body">
+            <p>The market is full of partners who can find you a backend developer. Almost nobody can find you a senior art director, a copywriter who understands your category, or a project manager who can run a content team — select them seriously, train them on AI, integrate them into your organization and stand behind them contractually.</p>
+            <p>That gap is exactly where Arkage Talents operates. We are the exception in the creative space: a partner able to select and integrate marketing, communication and creative professionals with immediate alignment to your strategic objectives.</p>
+          </div>
+        </div>
+
+        <div class="stats-row fade-up">
+          <div class="stat-item">
+            <span class="stat-number">50+</span>
+            <span class="stat-label">Talents consultants currently embedded inside client teams</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">1/20</span>
+            <span class="stat-label">Selection ratio — only 1 candidate in 20 passes our process</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">5 wks</span>
+            <span class="stat-label">From brief to onboarding — including training and mentoring</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROCESS -->
+    <section class="content-section">
+      <div class="wrap">
+        <div class="content-grid fade-up">
+          <p class="content-label">How it works</p>
+          <div>
+            <div class="content-body">
+              <p>From brief to onboarding in five weeks. We screen for the human qualities that make someone thrive inside someone else's team: creativity, punctuality, empathy and initiative. Every Talents professional also receives 360° training on artificial intelligence — so the person who joins you is already fluent in the tools reshaping creative work.</p>
+            </div>
+            <div class="timeline">
+              <div class="timeline-step">
+                <span class="timeline-week">Week 1</span>
+                <div>
+                  <p class="timeline-content-title">Discovery</p>
+                  <p class="timeline-content-desc">We study your company culture and the job to be done. The brief that matters isn't the one in the doc, it's the one we extract from the conversation.</p>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <span class="timeline-week">Weeks 2–3</span>
+                <div>
+                  <p class="timeline-content-title">Selection</p>
+                  <p class="timeline-content-desc">CV screening, agency interviews, English assessment and — because it is 2026 — an AI-usage assessment. Only 1 in 20 candidates makes it through.</p>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <span class="timeline-week">Week 4</span>
+                <div>
+                  <p class="timeline-content-title">Your choice</p>
+                  <p class="timeline-content-desc">You interview the shortlist and choose. We present only candidates we would work with ourselves.</p>
+                </div>
+              </div>
+              <div class="timeline-step">
+                <span class="timeline-week">Week 5</span>
+                <div>
+                  <p class="timeline-content-title">Onboarding</p>
+                  <p class="timeline-content-desc">Your new team member starts, with onboarding and ongoing mentoring from a dedicated Arkage tutor.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMERCIAL MODEL -->
+    <section class="model-section">
+      <div class="wrap">
+        <div class="model-grid fade-up">
+          <p class="content-label">The commercial model</p>
+          <div class="model-points">
+            <div class="model-point">
+              <span class="model-point-icon">—</span>
+              <div class="model-point-text"><strong>No selection fee</strong>You pay only for days actually worked, net of absences, with granular monthly reporting.</div>
+            </div>
+            <div class="model-point">
+              <span class="model-point-icon">—</span>
+              <div class="model-point-text"><strong>Flexible terms</strong>Contracts start from a single month — typically quarterly or semi-annual — and scale up to multi-year agreements, with unit costs that decrease as your embedded team grows.</div>
+            </div>
+            <div class="model-point">
+              <span class="model-point-icon">—</span>
+              <div class="model-point-text"><strong>Full administrative coverage</strong>Arkage carries the full administrative, contractual and salary management. We guarantee continuity if someone is ill, absent or in dispute, and provide hardware, software and professional workstation.</div>
+            </div>
+            <div class="model-point">
+              <span class="model-point-icon">—</span>
+              <div class="model-point-text"><strong>Transparent rates</strong>Published rates by seniority — junior to senior, with a premium tier for special profiles — adjusted annually on the ISTAT index. No surprises, no hidden margins.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROOF -->
+    <section class="proof-section">
+      <div class="proof-inner">
+        <p class="proof-label">What embedded talent delivers</p>
+        <h2 class="proof-headline fade-up">Embedded does not mean <em>junior support</em>.</h2>
+        <div class="proof-body fade-up">
+          <p>Talents consultants have created the visual identity of EssilorLuxottica's 2026 Annual Shareholders' Meeting, rebranded the lens brand Shamir with a campaign produced entirely with AI, designed the identity of the EssilorLuxottica Creative Hub Hackathon, run social systems for Costa Del Mar and LensCrafters, managed CHANEL Eyewear's e-commerce program and delivered the digital content of the MIDO trade-show stand.</p>
+          <p>It means your team, extended with people who ship.</p>
+        </div>
+        <p class="proof-closing">Engage people. Skip the recruiting risk. Keep the flexibility.</p>
+      </div>
+    </section>
+
+    <!-- IS IT FOR YOU -->
+    <section class="fit-section">
+      <div class="wrap">
+        <div class="fit-inner fade-up">
+          <h2 class="fit-headline">Is Talents<br />for you?</h2>
+          <div>
+            <p class="fit-body">Talents fits creative hubs and marketing departments whose needs exceed their headcount: seasonal peaks, new capabilities such as AI content creation, or the structural choice to keep a flexible layer around a lean core team.</p>
+            <p class="fit-closing">Engage people. Skip the recruiting risk.<br />Keep the flexibility.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-band">
+      <div class="cta-inner">
+        <h2 class="cta-headline">Tell us what role<br />you need to fill.</h2>
+        <a href="/contact" class="cta-btn">Send us a brief</a>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div class="footer-inner">
+          <div>
+            <div class="footer-brand">Arkage</div>
+            <p class="footer-tagline">A creative platform — not an agency. Since 2000.</p>
+          </div>
+          <div>
+            <p class="footer-col-title">Offer</p>
+            <ul class="footer-links">
+              <li><a href="/nova">Nova</a></li>
+              <li><a href="/talents">Talents</a></li>
+              <li><a href="/edge">Edge</a></li>
+              <li><a href="/solutions">Solutions</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="footer-col-title">Industries</p>
+            <ul class="footer-links">
+              <li><a href="/industry/fashion">Fashion</a></li>
+              <li><a href="/industry/real-estate">Real Estate</a></li>
+              <li><a href="/industry/non-profit">Non Profit</a></li>
+              <li><a href="/industry/automotive">Automotive</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="footer-col-title">Connect</p>
+            <ul class="footer-links">
+              <li><a href="https://instagram.com/arkage" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://it.linkedin.com/company/arkage" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="/contact">Get in touch</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© {new Date().getFullYear()} Arkage. All rights reserved.</span>
+          <span>Rome · Milan</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const obs = new IntersectionObserver(
+        (e) => e.forEach(x => { if (x.isIntersecting) { x.target.classList.add('visible'); obs.unobserve(x.target); } }),
+        { threshold: 0.08 }
+      );
+      document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+    </script>
+  </body>
+</html>

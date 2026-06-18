@@ -2,81 +2,382 @@
 // src/pages/index.astro
 import { sanityClient } from '../sanity.js';
 
-// Query in linguaggio GROQ per estrarre i dati ordinati da Sanity
-const pillars = await sanityClient.fetch('*[_type == "pillar"] | order(title asc) {title, tagline, description}');
-const industries = await sanityClient.fetch('*[_type == "industry"] | order(title asc) {title, description, clients}');
+const pillars = await sanityClient.fetch(`*[_type == "pillar"] | order(order asc) {title, tagline, description, slug}`);
+const industries = await sanityClient.fetch(`*[_type == "industry"] | order(title asc) {title, description, clients, slug}`);
+
+const fallbackPillars = [
+  { title: "Nova", tagline: "A Team", description: "A dedicated team that runs your content operations end to end — always-on creativity, campaign amplification, platform management. Inside your tools, your calendar, your visibility. Sprint after sprint.", slug: { current: "nova" } },
+  { title: "Talents", tagline: "A Person", description: "Rigorously selected, AI-trained creative professionals integrated into your team. No selection fee. You pay only for days actually worked, with full administrative and contractual coverage from Arkage.", slug: { current: "talents" } },
+  { title: "Edge", tagline: "A Program", description: "Learning designed as experience: workshops, hackathons, gamification and transformation programs. Two deep verticals — AI adoption and Customer Experience — built on 25 years of communication craft.", slug: { current: "edge" } },
+  { title: "Solutions", tagline: "A Product", description: "Custom AI tools and platforms, designed and built with you, starting from fast measurable pilots. No off-the-shelf licenses. No eighteen-month roadmaps. Proven capability, compounding.", slug: { current: "solutions" } }
+];
+
+const fallbackIndustries = [
+  { title: "Fashion & Luxury", description: "Branding, campaigns, photo and video production with an AI focus, digital marketing, in-store materials, social — for brands that operate at speed and at scale.", clients: ["Luxottica", "Original Marines", "Miriade", "V°73", "Teddy Group", "OVS"], slug: { current: "fashion" } },
+  { title: "Real Estate", description: "Brokerage branding, residential and commercial development positioning, B2C and B2B ventures. High standing meets measurable efficiency.", clients: ["Gruppo Toscano Immobiliare", "BNP Paribas Real Estate", "SilverFir Capital"], slug: { current: "real-estate" } },
+  { title: "Non Profit", description: "Strategic and creative partner for Italy's most important NGOs. Complex challenges, concrete results — built for organizations where every euro of communication has to work.", clients: ["Lega del Filo d'Oro", "AISM", "AIRC", "Telethon", "Amnesty", "Greenpeace", "Save the Children"], slug: { current: "non-profit" } },
+  { title: "Automotive", description: "Product launches, retail marketing, CX programs, AI-driven content production — for manufacturers, dealer groups and mobility brands operating across Italy and internationally.", clients: ["Mercedes-Benz", "Ford", "Autotorino", "INEOS Automotive"], slug: { current: "automotive" } }
+];
+
+const displayPillars = pillars.length > 0 ? pillars : fallbackPillars;
+const displayIndustries = industries.length > 0 ? industries : fallbackIndustries;
 ---
 
-<html lang="it">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg"/>
-    <meta name="viewport" content="width=device-width"/>
-    <meta name="generator" content={Astro.generator}/>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
     <title>Arkage — Creative Platform</title>
+    <meta name="description" content="Arkage is a creative platform — not an agency. Since 2000, four engagement models for Fashion, Real Estate, Non Profit and Automotive." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
     <style>
-      /* Stile minimal temporaneo, domani lo adatterai al Figma del designer */
-      body { font-family: sans-serif; background-color: #ffffff; color: #111; margin: 0; padding: 2rem; }
-      .container { max-width: 1200px; margin: 0 auto; }
-      header { margin-bottom: 4rem; border-bottom: 2px solid #111; padding-bottom: 2rem; }
-      h1 { font-size: 3rem; letter-spacing: -0.05em; margin: 0 0 1rem 0; }
-      .tagline { font-size: 1.5rem; color: #555; max-width: 800px; }
-      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
-      .card { border: 1px solid #ddd; padding: 1.5rem; background: #f9f9f9; }
-      .card h3 { margin-top: 0; font-size: 1.5rem; }
-      .badge { display: inline-block; background: #111; color: #fff; padding: 0.2rem 0.5rem; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem; }
-      .client-list { font-size: 0.9rem; color: #666; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc; }
+      :root {
+        --black:   #0A0A0A;
+        --ivory:   #F5F0E8;
+        --white:   #FFFFFF;
+        --sand:    #C8B89A;
+        --mid:     #3D3D3D;
+        --muted:   #888880;
+        --border:  rgba(10,10,10,0.12);
+        --font-d:  'Syne', sans-serif;
+        --font-b:  'Inter', sans-serif;
+        --max:     1320px;
+        --px:      clamp(1.5rem, 5vw, 5rem);
+        --py:      clamp(4rem, 8vw, 8rem);
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body { font-family: var(--font-b); background: var(--ivory); color: var(--black); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+      a { color: inherit; text-decoration: none; }
+
+      .wrap { max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
+      .section { padding-block: var(--py); }
+
+      /* NAV */
+      nav {
+        position: fixed; inset: 0 0 auto 0; z-index: 100;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1.5rem var(--px);
+        background: rgba(245,240,232,0.9); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-logo { font-family: var(--font-d); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+      .nav-links { display: flex; gap: 2.5rem; list-style: none; font-size: 0.85rem; font-weight: 500; }
+      .nav-links a { opacity: 0.55; transition: opacity 0.2s; }
+      .nav-links a:hover { opacity: 1; }
+      .nav-cta {
+        font-family: var(--font-d); font-weight: 700; font-size: 0.75rem;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 0.65rem 1.4rem; background: var(--black); color: var(--ivory);
+        transition: background 0.2s;
+      }
+      .nav-cta:hover { background: var(--mid); }
+
+      /* HERO */
+      .hero {
+        min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end;
+        padding-top: 8rem; padding-bottom: clamp(3rem, 6vw, 5rem);
+        padding-inline: var(--px); max-width: var(--max); margin-inline: auto;
+      }
+      .hero-eyebrow {
+        font-size: 0.7rem; font-weight: 500; letter-spacing: 0.14em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 2rem;
+        display: flex; align-items: center; gap: 1rem;
+      }
+      .hero-eyebrow::before { content: ''; display: block; width: 2rem; height: 1px; background: var(--muted); }
+      .hero-headline {
+        font-family: var(--font-d); font-weight: 800;
+        font-size: clamp(3.2rem, 9vw, 9.5rem);
+        line-height: 0.92; letter-spacing: -0.03em;
+        max-width: 16ch; margin-bottom: 3rem;
+      }
+      .hero-headline em { font-style: normal; color: var(--sand); }
+      .hero-bottom {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: end;
+        border-top: 1px solid var(--border); padding-top: 2rem;
+      }
+      .hero-sub { font-size: clamp(0.95rem, 1.4vw, 1.15rem); font-weight: 300; line-height: 1.65; color: var(--mid); max-width: 44ch; }
+      .hero-closing {
+        font-family: var(--font-d); font-weight: 700; font-size: 0.9rem;
+        color: var(--black); text-align: right; letter-spacing: -0.01em;
+        font-style: italic;
+      }
+
+      /* SECTION LABEL */
+      .section-label {
+        font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 3rem;
+        display: flex; align-items: center; gap: 1rem;
+      }
+      .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+      /* PILLARS */
+      .pillars-section { background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+      .pillars-header { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: end; margin-bottom: 4rem; }
+      .pillars-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(2rem, 4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.05; }
+      .pillars-desc { font-size: 1rem; font-weight: 300; line-height: 1.7; color: var(--mid); }
+      .pillars-grid { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); }
+      .pillar-card {
+        padding: 2.5rem 2rem; border-right: 1px solid var(--border);
+        display: flex; flex-direction: column; gap: 0.75rem;
+        transition: background 0.25s; cursor: pointer;
+      }
+      .pillar-card:last-child { border-right: none; }
+      .pillar-card:hover { background: var(--ivory); }
+      .pillar-card:hover .pillar-arrow { opacity: 1; transform: translate(3px, -3px); }
+      .pillar-number { font-family: var(--font-d); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); }
+      .pillar-name { font-family: var(--font-d); font-weight: 800; font-size: 2rem; letter-spacing: -0.03em; line-height: 1; }
+      .pillar-tagline { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sand); font-weight: 600; }
+      .pillar-desc { font-size: 0.875rem; line-height: 1.7; color: var(--mid); font-weight: 300; flex: 1; margin-top: 0.5rem; }
+      .pillar-arrow { font-size: 1.1rem; opacity: 0; transition: opacity 0.2s, transform 0.2s; margin-top: 1rem; align-self: flex-end; }
+
+      /* INDUSTRIES */
+      .industries-section { background: var(--ivory); }
+      .industries-header { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: end; margin-bottom: 4rem; }
+      .industries-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(2rem, 4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.05; }
+      .industries-desc { font-size: 1rem; font-weight: 300; line-height: 1.7; color: var(--mid); }
+      .industries-list { display: flex; flex-direction: column; }
+      .industry-row {
+        display: grid; grid-template-columns: 2fr 3fr 2fr auto;
+        gap: 2rem; align-items: center;
+        padding: 2.5rem 0; border-top: 1px solid var(--border);
+        cursor: pointer; transition: padding-left 0.3s ease;
+      }
+      .industry-row:last-child { border-bottom: 1px solid var(--border); }
+      .industry-row:hover { padding-left: 0.75rem; }
+      .industry-row:hover .industry-arrow { opacity: 1; }
+      .industry-name { font-family: var(--font-d); font-weight: 800; font-size: clamp(1.4rem, 2.5vw, 2.2rem); letter-spacing: -0.02em; }
+      .industry-desc { font-size: 0.875rem; line-height: 1.65; color: var(--mid); font-weight: 300; }
+      .industry-clients { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+      .industry-clients strong { display: block; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.6rem; margin-bottom: 0.4rem; color: var(--black); }
+      .industry-arrow { font-size: 1.3rem; opacity: 0.15; transition: opacity 0.2s; }
+
+      /* PLATFORM STRIP */
+      .platform-strip { background: var(--black); color: var(--ivory); }
+      .platform-inner {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+        align-items: center; padding-block: var(--py);
+        max-width: var(--max); margin-inline: auto; padding-inline: var(--px);
+      }
+      .platform-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(2rem, 4vw, 3.5rem); letter-spacing: -0.03em; line-height: 1.05; }
+      .platform-headline em { font-style: normal; color: var(--sand); }
+      .platform-body { font-size: 1rem; font-weight: 300; line-height: 1.75; color: rgba(245,240,232,0.65); }
+      .platform-body p + p { margin-top: 1.25rem; }
+      .platform-closing { margin-top: 2rem; font-family: var(--font-d); font-weight: 700; font-size: 0.95rem; color: var(--sand); font-style: italic; }
+
+      /* CTA */
+      .cta-band { background: var(--sand); }
+      .cta-inner {
+        display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+        padding-block: clamp(3rem, 6vw, 5rem);
+        max-width: var(--max); margin-inline: auto; padding-inline: var(--px);
+      }
+      .cta-headline { font-family: var(--font-d); font-weight: 800; font-size: clamp(1.8rem, 4vw, 3.2rem); letter-spacing: -0.03em; line-height: 1.05; color: var(--black); max-width: 22ch; }
+      .cta-btn {
+        flex-shrink: 0; font-family: var(--font-d); font-weight: 700; font-size: 0.8rem;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 1.1rem 2.5rem; background: var(--black); color: var(--ivory);
+        transition: background 0.2s; white-space: nowrap;
+      }
+      .cta-btn:hover { background: var(--mid); }
+
+      /* FOOTER */
+      footer { background: var(--black); color: var(--ivory); border-top: 1px solid rgba(245,240,232,0.08); }
+      .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-block: 4rem; }
+      .footer-brand { font-family: var(--font-d); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+      .footer-tagline { font-size: 0.85rem; font-weight: 300; color: rgba(245,240,232,0.4); line-height: 1.6; max-width: 26ch; }
+      .footer-bcorp { font-size: 0.65rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(245,240,232,0.25); margin-top: 1.5rem; }
+      .footer-col-title { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 1.2rem; }
+      .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
+      .footer-links a { font-size: 0.875rem; font-weight: 300; opacity: 0.6; transition: opacity 0.2s; }
+      .footer-links a:hover { opacity: 1; }
+      .footer-bottom { border-top: 1px solid rgba(245,240,232,0.08); padding-block: 1.5rem; display: flex; justify-content: space-between; font-size: 0.7rem; color: rgba(245,240,232,0.25); }
+
+      /* RESPONSIVE */
+      @media (max-width: 1024px) {
+        .pillars-grid { grid-template-columns: 1fr 1fr; }
+        .pillar-card:nth-child(2) { border-right: none; }
+        .pillar-card:nth-child(1), .pillar-card:nth-child(2) { border-bottom: 1px solid var(--border); }
+        .platform-inner { grid-template-columns: 1fr; gap: 3rem; }
+      }
+      @media (max-width: 900px) {
+        .hero-bottom { grid-template-columns: 1fr; }
+        .hero-closing { text-align: left; }
+        .pillars-header, .industries-header { grid-template-columns: 1fr; }
+        .industry-row { grid-template-columns: 1fr 1fr; }
+        .industry-row:hover { padding-left: 0; }
+        .industry-arrow { display: none; }
+        .footer-inner { grid-template-columns: 1fr 1fr; }
+        .cta-inner { flex-direction: column; align-items: flex-start; }
+      }
+      @media (max-width: 600px) {
+        .nav-links { display: none; }
+        .pillars-grid { grid-template-columns: 1fr; }
+        .pillar-card { border-right: none; border-bottom: 1px solid var(--border); }
+        .industry-row { grid-template-columns: 1fr; }
+        .footer-inner { grid-template-columns: 1fr; }
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        .fade-up { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .fade-up.visible { opacity: 1; transform: none; }
+      }
     </style>
   </head>
+
   <body>
-    <div class="container">
-      <header>
-        <!-- Testo di posizionamento ufficiale preso dal brief -->
-        <h1>Arkage is a creative platform — not an agency.</h1>
-        <p class="tagline">Not an agency you brief. A platform you plug into — four ways, depending on what your business actually needs.</p>
-      </header>
+    <!-- NAV -->
+    <nav>
+      <a href="/" class="nav-logo">Arkage</a>
+      <ul class="nav-links">
+        <li><a href="/nova">Nova</a></li>
+        <li><a href="/talents">Talents</a></li>
+        <li><a href="/edge">Edge</a></li>
+        <li><a href="/solutions">Solutions</a></li>
+      </ul>
+      <a href="/contact" class="nav-cta">Get in touch</a>
+    </nav>
 
-      <main>
-        <!-- SEZIONE 4 PILLAR -->
-        <section>
-          <h2>Our Offer Pillars</h2>
-          <div class="grid">
-            {pillars.length === 0 ? (
-              <p>Nessun pillar inserito nel CMS. Chiedi alla Content Coordinator di aggiungerli!</p>
-            ) : (
-              pillars.map((p) => (
-                <div class="card">
-                  <span class="badge">{p.tagline}</span>
-                  <h3>{p.title}</h3>
-                  <p>{p.description}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
+    <!-- HERO -->
+    <section>
+      <div class="hero">
+        <p class="hero-eyebrow">Since 2000 — Rome & Milan</p>
+        <h1 class="hero-headline">
+          A creative<br /><em>platform</em>,<br />not an agency.
+        </h1>
+        <div class="hero-bottom">
+          <p class="hero-sub">
+            Not an agency you brief. A platform you plug into — four ways, depending on what your business actually needs. A team, a person, a program, a product.
+          </p>
+          <p class="hero-closing">Expect what you wouldn't<br />from an agency.</p>
+        </div>
+      </div>
+    </section>
 
-        <!-- SEZIONE VERTICAL INDUSTRIES -->
-        <section>
-          <h2>Market Verticals</h2>
-          <div class="grid">
-            {industries.length === 0 ? (
-              <p>Nessun mercato verticale inserito nel CMS. Chiedi alla Content Coordinator di aggiungerli!</p>
-            ) : (
-              industries.map((ind) => (
-                <div class="card">
-                  <h3>{ind.title}</h3>
-                  <p>{ind.description}</p>
-                  {ind.clients && ind.clients.length > 0 && (
-                    <div class="client-list">
-                      <strong>Selected Clients:</strong> {ind.clients.join(', ')}
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
+    <!-- PILLARS -->
+    <section class="section pillars-section">
+      <div class="wrap">
+        <p class="section-label">Four Engagement Models</p>
+        <div class="pillars-header">
+          <h2 class="pillars-headline">Choose where<br />to plug in.</h2>
+          <p class="pillars-desc">
+            Each model has a different target and a different value proposition. They combine — and you can always switch levels. Start where the need is most urgent.
+          </p>
+        </div>
+        <div class="pillars-grid">
+          {displayPillars.map((p, i) => (
+            <a href={`/${p.slug?.current || p.title.toLowerCase()}`} class="pillar-card fade-up">
+              <span class="pillar-number">0{i + 1}</span>
+              <span class="pillar-name">{p.title}</span>
+              <span class="pillar-tagline">{p.tagline}</span>
+              <p class="pillar-desc">{p.description}</p>
+              <span class="pillar-arrow">↗</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- PLATFORM STRIP -->
+    <section class="platform-strip">
+      <div class="platform-inner">
+        <h2 class="platform-headline">One platform<br />underneath <em>all four</em>.</h2>
+        <div class="platform-body">
+          <p>Twenty-five years of communication craft. An agile, sprint-based way of working with small flash teams instead of bloated account structures. And artificial intelligence by design — every engagement starts with the question of what AI can do for it.</p>
+          <p>We are a Benefit Corporation and a certified B Corp, based in Rome and Milan, with around ninety people and an extended network of vetted creative consultants. Governed by our public AI Manifesto.</p>
+          <p class="platform-closing">Start where your need is sharpest.<br />The platform does the rest.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INDUSTRIES -->
+    <section class="section industries-section">
+      <div class="wrap">
+        <p class="section-label">Market Focus</p>
+        <div class="industries-header">
+          <h2 class="industries-headline">Industries where<br />we have track record.</h2>
+          <p class="industries-desc">
+            We stay selective. These are the sectors where we have case studies, satisfied clients and ongoing relationships built over two decades — not verticals we claim to serve.
+          </p>
+        </div>
+        <div class="industries-list">
+          {displayIndustries.map((ind) => (
+            <a href={`/industry/${ind.slug?.current || ind.title.toLowerCase().replace(/\s+/g, '-')}`} class="industry-row fade-up">
+              <span class="industry-name">{ind.title}</span>
+              <p class="industry-desc">{ind.description}</p>
+              <div class="industry-clients">
+                <strong>Selected clients</strong>
+                {ind.clients?.slice(0, 4).join(', ')}{ind.clients?.length > 4 ? ` +${ind.clients.length - 4}` : ''}
+              </div>
+              <span class="industry-arrow">↗</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-band">
+      <div class="cta-inner">
+        <h2 class="cta-headline">Ready to plug into<br />a different model?</h2>
+        <a href="/contact" class="cta-btn">Send us a brief</a>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="wrap">
+        <div class="footer-inner">
+          <div>
+            <div class="footer-brand">Arkage</div>
+            <p class="footer-tagline">A creative platform — not an agency. Since 2000.</p>
+            <p class="footer-bcorp">Benefit Corporation · B Corp Certified</p>
           </div>
-        </section>
-      </main>
-    </div>
+          <div>
+            <p class="footer-col-title">Offer</p>
+            <ul class="footer-links">
+              <li><a href="/nova">Nova</a></li>
+              <li><a href="/talents">Talents</a></li>
+              <li><a href="/edge">Edge</a></li>
+              <li><a href="/solutions">Solutions</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="footer-col-title">Industries</p>
+            <ul class="footer-links">
+              <li><a href="/industry/fashion">Fashion</a></li>
+              <li><a href="/industry/real-estate">Real Estate</a></li>
+              <li><a href="/industry/non-profit">Non Profit</a></li>
+              <li><a href="/industry/automotive">Automotive</a></li>
+            </ul>
+          </div>
+          <div>
+            <p class="footer-col-title">Connect</p>
+            <ul class="footer-links">
+              <li><a href="https://instagram.com/arkage" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://it.linkedin.com/company/arkage" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://open.spotify.com" target="_blank" rel="noopener">On the Edge Podcast</a></li>
+              <li><a href="/contact">Get in touch</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <span>© {new Date().getFullYear()} Arkage. All rights reserved.</span>
+          <span>Rome · Milan</span>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const obs = new IntersectionObserver(
+        (entries) => entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } }),
+        { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+      );
+      document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+    </script>
   </body>
 </html>
