@@ -1,0 +1,87 @@
+---
+const apiKey = import.meta.env.PUBLIC_GEMINI_API_KEY;
+---
+<div class="advisor-box">
+  <h3>Trova il tuo Engagement Model</h3>
+  <p>Raccontaci la tua sfida di business. La nostra AI ti consiglierà il pillar Arkage perfetto per te.</p>
+  
+  <textarea id="user-problem" rows="3" placeholder="Es. Il mio team di marketing è sovraccarico..."></textarea>
+  <button id="ask-btn">Analizza la mia esigenza</button>
+  
+  <div id="ai-response" class="hidden">
+    <!-- La risposta di Gemini apparirà qui -->
+  </div>
+</div>
+
+<script define:vars={{ apiKey }}>
+  const btn = document.getElementById('ask-btn');
+  const input = document.getElementById('user-problem');
+  const responseBox = document.getElementById('ai-response');
+
+  btn.addEventListener('click', async () => {
+    const userText = input.value;
+    if (!userText) return;
+
+    // Mostra stato di caricamento
+    btn.innerText = "Elaborazione...";
+    responseBox.classList.remove('hidden');
+    responseBox.innerHTML = "<em>L'AI sta analizzando la tua richiesta...</em>";
+
+    // Il Prompt segreto per istruire Gemini sul vostro brand
+    const systemPrompt = `Sei un consulente della creative platform Arkage. L'utente ti dirà un problema aziendale. Rispondi in massimo 3 frasi, con tono professionale ma diretto. Devi consigliare UNO dei nostri 4 pillar: Nova (team dedicato end-to-end), Talents (professionisti embedded nel team cliente), Edge (formazione e hackathon), Solutions (piattaforme custom AI). Problema dell'utente: "${userText}"`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+
+      const data = await response.json();
+      const aiAnswer = data.candidates[0].content.parts[0].text;
+      
+      responseBox.innerHTML = `<strong>Il nostro consiglio:</strong><br/> ${aiAnswer}`;
+      btn.innerText = "Analizza la mia esigenza";
+      
+    } catch (error) {
+      responseBox.innerHTML = "<span style='color: red;'>Errore di connessione. Riprova.</span>";
+      btn.innerText = "Analizza la mia esigenza";
+    }
+  });
+</script>
+
+<style>
+  .advisor-box {
+    background-color: var(--ivory, #F5F0E8);
+    padding: 2rem;
+    border-radius: 8px;
+    margin: 2rem 0;
+    border: 1px solid var(--border, rgba(10,10,10,0.12));
+  }
+  textarea {
+    width: 100%;
+    padding: 1rem;
+    margin: 1rem 0;
+    border: 1px solid #ccc;
+    font-family: inherit;
+  }
+  button {
+    background-color: var(--black, #0A0A0A);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  #ai-response {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ccc;
+    line-height: 1.6;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
