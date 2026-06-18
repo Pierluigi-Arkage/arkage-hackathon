@@ -1,11 +1,82 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+// src/pages/index.astro
+import { sanityClient } from '../sanity.js';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// Query in linguaggio GROQ per estrarre i dati ordinati da Sanity
+const pillars = await sanityClient.fetch('*[_type == "pillar"] | order(title asc) {title, tagline, description}');
+const industries = await sanityClient.fetch('*[_type == "industry"] | order(title asc) {title, description, clients}');
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Arkage — Creative Platform</title>
+    <style>
+      /* Stile minimal temporaneo, domani lo adatterai al Figma del designer */
+      body { font-family: sans-serif; background-color: #ffffff; color: #111; margin: 0; padding: 2rem; }
+      .container { max-width: 1200px; margin: 0 auto; }
+      header { margin-bottom: 4rem; border-bottom: 2px solid #111; padding-bottom: 2rem; }
+      h1 { font-size: 3rem; letter-spacing: -0.05em; margin: 0 0 1rem 0; }
+      .tagline { font-size: 1.5rem; color: #555; max-width: 800px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 4rem; }
+      .card { border: 1px solid #ddd; padding: 1.5rem; background: #f9f9f9; }
+      .card h3 { margin-top: 0; font-size: 1.5rem; }
+      .badge { display: inline-block; background: #111; color: #fff; padding: 0.2rem 0.5rem; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 0.5rem; }
+      .client-list { font-size: 0.9rem; color: #666; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ccc; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <!-- Testo di posizionamento ufficiale preso dal brief -->
+        <h1>Arkage is a creative platform — not an agency.</h1>[cite: 2]
+        <p class="tagline">Not an agency you brief. A platform you plug into — four ways, depending on what your business actually needs.</p>
+      </header>
+
+      <main>
+        <!-- SEZIONE 4 PILLAR -->
+        <section>
+          <h2>Our Offer Pillars</h2>
+          <div class="grid">
+            {pillars.length === 0 ? (
+              <p>Nessun pillar inserito nel CMS. Chiedi alla Content Coordinator di aggiungerli!</p>
+            ) : (
+              pillars.map((p) => (
+                <div class="card">
+                  <span class="badge">{p.tagline}</span>
+                  <h3>{p.title}</h3>
+                  <p>{p.description}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <!-- SEZIONE VERTICAL INDUSTRIES -->
+        <section>
+          <h2>Market Verticals</h2>
+          <div class="grid">
+            {industries.length === 0 ? (
+              <p>Nessun mercato verticale inserito nel CMS. Chiedi alla Content Coordinator di aggiungerli!</p>
+            ) : (
+              industries.map((ind) => (
+                <div class="card">
+                  <h3>{ind.title}</h3>
+                  <p>{ind.description}</p>
+                  {ind.clients && ind.clients.length > 0 && (
+                    <div class="client-list">
+                      <strong>Selected Clients:</strong> {ind.clients.join(', ')}
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
