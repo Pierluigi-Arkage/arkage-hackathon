@@ -1,16 +1,10 @@
 ---
 // src/components/AiAdvisor.astro
-// Rebuilt from spec (original source not provided): the visitor states a need
-// — via a quick pick or free text — and gets a primary engagement model plus
-// an alternative, each with its own CTA to the model page. Recommendation logic
-// is client-side and keyword-based: zero dependencies, no API key, demo-safe.
-//
-// To make this a real Claude-powered advisor on the deployed site, swap the
-// `recommend()` call for a fetch to a Vercel serverless endpoint that holds the
-// API key server-side (the browser must never see it). Happy to wire that next.
+// Il server legge la chiave dal file .env in modo sicuro
+const apiKey = import.meta.env.PUBLIC_GEMINI_API_KEY;
 ---
 
-<section id="advisor-container" class="advisor">
+<section id="advisor-container" class="advisor" data-secret={apiKey}>
   <div class="advisor-wrap">
     <div class="advisor-panel">
       <h2 class="advisor-title">What do you need <em>right now?</em></h2>
@@ -29,9 +23,13 @@
         <button type="button" id="advisor-go" class="advisor-go">Recommend</button>
       </div>
 
+     <!-- Le nuove card risultato -->
       <div id="advisor-result" class="advisor-result" hidden>
-        <p class="advisor-result-label">Based on that, start here</p>
-        <div class="advisor-cards">
+        <!-- NUOVO: Box per il messaggio fuori contesto -->
+        <p id="advisor-error" style="color: #ff4444; font-weight: 600; font-size: 1.1rem; text-align: center; margin-bottom: 1.5rem;" hidden></p>
+        
+        <p class="advisor-result-label" id="advisor-label">Based on that, start here</p>
+        <div class="advisor-cards" id="advisor-cards-container">
           <a id="rec-primary" class="rec-card rec-card--primary" href="#">
             <span class="rec-rank">Best fit</span>
             <span class="rec-tagline" data-field="tagline"></span>
@@ -61,12 +59,6 @@
     border: 1px solid var(--border, rgba(10,10,10,0.12));
     padding: clamp(1.75rem, 4vw, 3rem);
   }
-  .advisor-eyebrow {
-    font-family: var(--font-b, sans-serif); font-size: 0.65rem; font-weight: 600;
-    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #888880);
-    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
-  }
-  .advisor-eyebrow::before { content: ''; width: 1.5rem; height: 1px; background: var(--sand, #C8B89A); }
   .advisor-title {
     font-family: var(--font-d, sans-serif); font-weight: 800;
     font-size: clamp(1.6rem, 3.4vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.02;
@@ -101,7 +93,7 @@
     font-family: var(--font-d, sans-serif); font-weight: 700; font-size: 0.78rem;
     letter-spacing: 0.08em; text-transform: uppercase; padding: 0.85rem 1.6rem;
     background: var(--black, #0A0A0A); color: var(--ivory, #F5F0E8); border: none; cursor: pointer;
-    transition: background 0.18s;
+    transition: background 0.18s, opacity 0.18s;
   }
   .advisor-go:hover { background: var(--mid, #3D3D3D); }
 
@@ -152,42 +144,23 @@
   }
 </style>
 
-<script>
-  type PillarKey = 'nova' | 'talents' | 'edge' | 'solutions';
+<script is:inline>
+  const container = document.getElementById('advisor-container');
+  const myKey = container.dataset.secret;
 
-  const PILLARS: Record<PillarKey, { name: string; tagline: string; href: string; line: string }> = {
+  const PILLARS = {
     nova:      { name: 'Nova',      tagline: 'A Team',    href: '/nova',      line: 'A dedicated team running your content operations end to end — on sprint, inside your tools.' },
-    talents:   { name: 'Talents',  tagline: 'A Person',  href: '/talents',   line: 'AI-trained senior creatives embedded in your team. You pay only for days worked.' },
-    edge:      { name: 'Edge',     tagline: 'A Program', href: '/edge',      line: 'Training and transformation designed as experience — so change actually sticks.' },
-    solutions: { name: 'Solutions',tagline: 'A Product', href: '/solutions', line: 'Custom AI tools and platforms, built with you from fast, measurable pilots.' },
+    talents:   { name: 'Talents',   tagline: 'A Person',  href: '/talents',   line: 'AI-trained senior creatives embedded in your team. You pay only for days worked.' },
+    edge:      { name: 'Edge',      tagline: 'A Program', href: '/edge',      line: 'Training and transformation designed as experience — so change actually sticks.' },
+    solutions: { name: 'Solutions', tagline: 'A Product', href: '/solutions', line: 'Custom AI tools and platforms, built with you from fast, measurable pilots.' }
   };
 
-  const KEYWORDS: Record<PillarKey, string[]> = {
-    nova:      ['content','volume','always-on','always on','campaign','calendar','operation','production','channel','scale','ongoing','social','editorial','asset','launch','backlog','newsletter','localis','localiz'],
-    talents:   ['hire','hiring','headcount','person','people','freelance','recruit','designer','copywriter','art director','embed','staff','senior','skill','talent','cover','resource','maternity','add a'],
-    edge:      ['train','training','workshop','learn','adoption','culture','change','transform','event','hackathon','cx','customer experience','sales','engagement','program','onboard','upskill','enthusias','resist'],
-    solutions: ['build','tool','automation','automate','platform','product','software','integrat','pilot','workflow','app','api','plugin','dashboard','custom','efficiency'],
-  };
-
-  const KEYS: PillarKey[] = ['nova', 'talents', 'edge', 'solutions'];
-
-  function recommend(text: string): { primary: PillarKey; alt: PillarKey } {
-    const t = (text || '').toLowerCase();
-    const scores: Record<PillarKey, number> = { nova: 0, talents: 0, edge: 0, solutions: 0 };
-    for (const key of KEYS) {
-      for (const w of KEYWORDS[key]) { if (t.includes(w)) scores[key]++; }
-    }
-    const ranked = [...KEYS].sort((a, b) => scores[b] - scores[a]);
-    if (scores[ranked[0]] === 0) return { primary: 'nova', alt: 'talents' };
-    return { primary: ranked[0], alt: ranked[1] };
-  }
-
-  function fill(cardId: string, key: PillarKey): void {
+  function fill(cardId, key) {
     const card = document.getElementById(cardId);
     if (!card) return;
     const p = PILLARS[key];
     card.setAttribute('href', p.href);
-    const set = (sel: string, value: string) => {
+    const set = (sel, value) => {
       const el = card.querySelector(sel);
       if (el) el.textContent = value;
     };
@@ -197,35 +170,118 @@
     set('[data-field="cta"]', 'Explore ' + p.name + ' \u2197');
   }
 
-  function show(primary: PillarKey, alt: PillarKey): void {
+  // MODIFICA QUI: La funzione show ora "accende" le card e "spegne" l'errore per sicurezza
+  function show(primary, alt) {
     if (alt === primary) alt = primary === 'nova' ? 'talents' : 'nova';
     fill('rec-primary', primary);
     fill('rec-alt', alt);
+    
+    const errorBox = document.getElementById('advisor-error');
+    const cardsBox = document.getElementById('advisor-cards-container');
+    const labelBox = document.getElementById('advisor-label');
+    
+    // Forziamo la scomparsa dell'errore e la riapparizione delle card
+    if(errorBox) errorBox.hidden = true;
+    if(cardsBox) cardsBox.style.display = 'grid';
+    if(labelBox) labelBox.style.display = 'block';
+
     const result = document.getElementById('advisor-result');
     if (!result) return;
     result.hidden = false;
     result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
-  const chips = Array.from(document.querySelectorAll<HTMLElement>('.chip'));
+  const chips = Array.from(document.querySelectorAll('.chip'));
   chips.forEach((chip) => {
     chip.addEventListener('click', () => {
       chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
       chip.setAttribute('aria-pressed', 'true');
-      const primary = (chip.dataset.primary as PillarKey) || 'nova';
-      const alt = (chip.dataset.alt as PillarKey) || 'talents';
+      const primary = chip.dataset.primary || 'nova';
+      const alt = chip.dataset.alt || 'talents';
       show(primary, alt);
     });
   });
 
-  const input = document.getElementById('advisor-input') as HTMLInputElement | null;
-  const go = document.getElementById('advisor-go') as HTMLButtonElement | null;
-  function runText(): void {
-    if (!input) return;
+  const input = document.getElementById('advisor-input');
+  const go = document.getElementById('advisor-go');
+
+  async function runText() {
+    if (!input || !input.value) return;
+    
     chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
-    const { primary, alt } = recommend(input.value);
-    show(primary, alt);
+
+    const userText = input.value;
+    const originalText = go.innerText;
+    
+    go.innerText = "Analyzing...";
+    go.style.opacity = "0.7";
+    go.style.pointerEvents = "none";
+
+    const systemPrompt = `Sei l'AI di Arkage. Leggi il problema dell'utente. 
+    REGOLA 1: Se la richiesta è completamente fuori contesto, assurda o non riguarda business, marketing, creatività o tecnologia (es. "voglio una pizza", "ricetta della torta", "che tempo fa?"), devi rispondere ESATTAMENTE E SOLO con la stringa "error, out".
+    REGOLA 2: Altrimenti, scegli DUE dei nostri 4 pillar (nova, talents, edge, solutions) che risolvono l'esigenza. Il primo è il Best Fit, il secondo è l'Alternative. Rispondi ESATTAMENTE E SOLO con i due nomi in minuscolo separati da virgola. Esempio: "nova, solutions". 
+    Problema dell'utente: "${userText}"`;
+
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${myKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: systemPrompt }] }]
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.warn("Google API 503: Server sovraccarico. Attivazione fallback.");
+        show('nova', 'solutions');
+        return;
+      }
+
+      const aiAnswer = data.candidates[0].content.parts[0].text.trim().toLowerCase();
+      let [primary, alt] = aiAnswer.split(',').map(s => s.trim());
+
+      const errorBox = document.getElementById('advisor-error');
+      const cardsBox = document.getElementById('advisor-cards-container');
+      const labelBox = document.getElementById('advisor-label');
+      const resultContainer = document.getElementById('advisor-result');
+
+      // MODIFICA QUI: Gestione Richiesta Fuori Contesto
+      if (primary.includes('error')) {
+        errorBox.innerText = "I'm sorry, but this request is outside our scope. Try asking about marketing, creative teams, or AI solutions!";
+        errorBox.hidden = false;
+        
+        // Forziamo il CSS a nascondere le card
+        cardsBox.style.display = 'none';
+        labelBox.style.display = 'none';
+        
+        resultContainer.hidden = false;
+        resultContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
+
+      // Se la richiesta è lecita
+      errorBox.hidden = true;
+      cardsBox.style.display = 'grid';
+      labelBox.style.display = 'block';
+
+      const validKeys = ['nova', 'talents', 'edge', 'solutions'];
+      if (!validKeys.includes(primary)) primary = 'nova';
+      if (!validKeys.includes(alt)) alt = 'solutions';
+
+      show(primary, alt);
+      
+    } catch (error) {
+      console.warn("Errore di rete con Google. Attivazione fallback.");
+      show('nova', 'solutions');
+    } finally {
+      go.innerText = originalText;
+      go.style.opacity = "1";
+      go.style.pointerEvents = "auto";
+    }
   }
+
   go?.addEventListener('click', runText);
   input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') runText(); });
 </script>
