@@ -23,6 +23,7 @@ const fallbackIndustries = [
 const displayPillars = pillars.length > 0 ? pillars : fallbackPillars;
 const displayIndustries = industries.length > 0 ? industries : fallbackIndustries;
 
+
 ---
 
 <html lang="en">
@@ -33,6 +34,7 @@ const displayIndustries = industries.length > 0 ? industries : fallbackIndustrie
     <meta name="generator" content={Astro.generator} />
     <title>Arkage — Creative Platform</title>
     <meta name="description" content="Arkage is a creative platform — not an agency. Since 2000, four engagement models for Fashion, Real Estate, Non Profit and Automotive." />
+    <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -229,6 +231,17 @@ const displayIndustries = industries.length > 0 ? industries : fallbackIndustrie
         .fade-up.visible { opacity: 1; transform: none; }
       }
     </style>
+    <script is:inline>
+  // Finto lucchetto lato client
+  const password = prompt("Accesso Riservato. Inserisci la password per visualizzare il progetto:");
+  
+  // Cambia "Arkage2026" con la password che preferisci
+  if (password !== "Arkage2026") {
+    // Se la password è sbagliata o l'utente clicca Annulla, cancelliamo tutto l'HTML
+    document.head.innerHTML = "";
+    document.body.innerHTML = "<div style='display:flex; justify-content:center; align-items:center; height:100vh; background-color:#0A0A0A; color:#ff4444; font-family:sans-serif; font-size:2rem; font-weight:bold;'>ACCESSO NEGATO</div>";
+  }
+</script>
   </head>
 
   <body>
