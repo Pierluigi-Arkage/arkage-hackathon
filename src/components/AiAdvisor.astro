@@ -1,72 +1,231 @@
 ---
-// Il server legge la chiave dal file .env di nascosto
-const apiKey = import.meta.env.PUBLIC_GEMINI_API_KEY;
+// src/components/AiAdvisor.astro
+// Rebuilt from spec (original source not provided): the visitor states a need
+// — via a quick pick or free text — and gets a primary engagement model plus
+// an alternative, each with its own CTA to the model page. Recommendation logic
+// is client-side and keyword-based: zero dependencies, no API key, demo-safe.
+//
+// To make this a real Claude-powered advisor on the deployed site, swap the
+// `recommend()` call for a fetch to a Vercel serverless endpoint that holds the
+// API key server-side (the browser must never see it). Happy to wire that next.
 ---
 
-<!-- Inseriamo la chiave in un data-attribute invisibile -->
-<div id="advisor-container" class="advisor-box" data-secret={apiKey}>
-  <h3>Trova il tuo Engagement Model</h3>
-  <p>Raccontaci la tua sfida di business. La nostra AI ti consiglierà il pillar Arkage perfetto per te.</p>
-  
-  <textarea id="user-problem" rows="3" placeholder="Es. Il mio team di marketing è sovraccarico..."></textarea>
-  <button id="ask-btn">Analizza la mia esigenza</button>
-  
-  <div id="ai-response" class="hidden"></div>
-</div>
+<section id="advisor-container" class="advisor">
+  <div class="advisor-wrap">
+    <div class="advisor-panel">
+      <h2 class="advisor-title">What do you need <em>right now?</em></h2>
+      <p class="advisor-help">Pick the closest, or describe it in your words. We'll point you to where to plug in — and a second option worth a look.</p>
 
-<script is:inline>
-  // Lo script "pesca" la chiave dall'HTML invece di averla scritta in chiaro!
-  const container = document.getElementById('advisor-container');
-  const myKey = container.dataset.secret;
-  
-  const btn = document.getElementById('ask-btn');
-  const input = document.getElementById('user-problem');
-  const responseBox = document.getElementById('ai-response');
+      <div class="advisor-chips" role="group" aria-label="Common needs">
+        <button type="button" class="chip" data-primary="nova" data-alt="talents">Always-on content production</button>
+        <button type="button" class="chip" data-primary="talents" data-alt="nova">Add senior creative skills, fast</button>
+        <button type="button" class="chip" data-primary="edge" data-alt="solutions">Make AI &amp; change stick in my org</button>
+        <button type="button" class="chip" data-primary="solutions" data-alt="edge">Build a custom AI tool</button>
+      </div>
 
-  btn.addEventListener('click', async () => {
-    const userText = input.value;
-    if (!userText) return;
+      <div class="advisor-field">
+        <input id="advisor-input" type="text" autocomplete="off"
+          placeholder="e.g. we launch products every week and our team can't keep up" />
+        <button type="button" id="advisor-go" class="advisor-go">Recommend</button>
+      </div>
 
-    btn.innerText = "Elaborazione in corso...";
-    responseBox.classList.remove('hidden');
-    responseBox.innerHTML = "<em>L'AI sta analizzando la tua richiesta...</em>";
-
-    const systemPrompt = `Sei un consulente della creative platform Arkage. L'utente ti dirà un problema aziendale. Rispondi in massimo 3 frasi, con tono professionale. Devi consigliare UNO dei nostri 4 pillar: Nova (team dedicato end-to-end), Talents (professionisti embedded nel team cliente), Edge (formazione e hackathon), Solutions (piattaforme custom AI). Problema dell'utente: "${userText}"`;
-
-    try {
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${myKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: systemPrompt }] }]
-        })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        responseBox.innerHTML = `<span style='color: red;'>Errore API Google: ${data.error?.message || 'Chiave o Modello non valido'}</span>`;
-        btn.innerText = "Analizza la mia esigenza";
-        return;
-      }
-
-      const aiAnswer = data.candidates[0].content.parts[0].text;
-      
-      responseBox.innerHTML = `<strong>Il nostro consiglio:</strong><br/><br/> ${aiAnswer}`;
-      btn.innerText = "Analizza la mia esigenza";
-      
-    } catch (error) {
-      responseBox.innerHTML = `<span style='color: red;'>Errore Tecnico: ${error.message}</span>`;
-      btn.innerText = "Analizza la mia esigenza";
-    }
-  });
-</script>
+      <div id="advisor-result" class="advisor-result" hidden>
+        <p class="advisor-result-label">Based on that, start here</p>
+        <div class="advisor-cards">
+          <a id="rec-primary" class="rec-card rec-card--primary" href="#">
+            <span class="rec-rank">Best fit</span>
+            <span class="rec-tagline" data-field="tagline"></span>
+            <span class="rec-name" data-field="name"></span>
+            <span class="rec-line" data-field="line"></span>
+            <span class="rec-cta" data-field="cta"></span>
+          </a>
+          <a id="rec-alt" class="rec-card rec-card--alt" href="#">
+            <span class="rec-rank">Also worth a look</span>
+            <span class="rec-tagline" data-field="tagline"></span>
+            <span class="rec-name" data-field="name"></span>
+            <span class="rec-line" data-field="line"></span>
+            <span class="rec-cta" data-field="cta"></span>
+          </a>
+        </div>
+        <p class="advisor-foot">Not sure, or it's a mix? <a href="/contact">Send us a brief →</a></p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <style>
-  .advisor-box { background-color: var(--ivory, #F5F0E8); padding: 2rem; border-radius: 8px; margin: 3rem 0; border: 1px solid var(--border, rgba(10,10,10,0.12)); }
-  textarea { width: 100%; padding: 1rem; margin: 1rem 0; border: 1px solid #ccc; font-family: inherit; resize: vertical; }
-  button { background-color: var(--black, #0A0A0A); color: white; padding: 0.8rem 1.5rem; border: none; cursor: pointer; font-weight: 600; }
-  button:hover { opacity: 0.8; }
-  #ai-response { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #ccc; line-height: 1.6; }
-  .hidden { display: none; }
+  .advisor { padding-block: clamp(2rem, 5vw, 4rem); padding-inline: var(--px, clamp(1.5rem, 5vw, 5rem)); }
+  .advisor-wrap { max-width: var(--max, 1320px); margin-inline: auto; }
+  .advisor-panel {
+    background: var(--white, #fff);
+    border: 1px solid var(--border, rgba(10,10,10,0.12));
+    padding: clamp(1.75rem, 4vw, 3rem);
+  }
+  .advisor-eyebrow {
+    font-family: var(--font-b, sans-serif); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #888880);
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;
+  }
+  .advisor-eyebrow::before { content: ''; width: 1.5rem; height: 1px; background: var(--sand, #C8B89A); }
+  .advisor-title {
+    font-family: var(--font-d, sans-serif); font-weight: 800;
+    font-size: clamp(1.6rem, 3.4vw, 2.6rem); letter-spacing: -0.03em; line-height: 1.02;
+  }
+  .advisor-title em { font-style: normal; color: var(--sand-ink, #8F7340); }
+  .advisor-help {
+    font-family: var(--font-b, sans-serif); font-weight: 300; font-size: 0.95rem;
+    line-height: 1.6; color: var(--mid, #3D3D3D); max-width: 52ch; margin-top: 0.9rem;
+  }
+
+  .advisor-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.75rem; }
+  .chip {
+    font-family: var(--font-b, sans-serif); font-size: 0.82rem; font-weight: 500;
+    color: var(--black, #0A0A0A); background: var(--ivory, #F5F0E8);
+    border: 1px solid var(--border, rgba(10,10,10,0.12)); border-radius: 999px;
+    padding: 0.6rem 1.1rem; cursor: pointer; transition: background 0.18s, border-color 0.18s, color 0.18s;
+  }
+  .chip:hover { background: var(--black, #0A0A0A); color: var(--ivory, #F5F0E8); border-color: var(--black, #0A0A0A); }
+  .chip[aria-pressed="true"] { background: var(--sand, #C8B89A); border-color: var(--sand, #C8B89A); color: var(--black, #0A0A0A); }
+
+  .advisor-field { display: flex; gap: 0.6rem; margin-top: 1rem; flex-wrap: wrap; }
+  #advisor-input {
+    flex: 1 1 280px; font-family: var(--font-b, sans-serif); font-size: 0.95rem; font-weight: 300;
+    color: var(--black, #0A0A0A); background: var(--ivory, #F5F0E8);
+    border: 1px solid var(--border, rgba(10,10,10,0.12)); padding: 0.85rem 1rem;
+  }
+  #advisor-input::placeholder { color: var(--muted, #888880); }
+  #advisor-input:focus-visible, .chip:focus-visible, .advisor-go:focus-visible, .rec-card:focus-visible {
+    outline: 2px solid var(--sand-ink, #8F7340); outline-offset: 2px;
+  }
+  .advisor-go {
+    font-family: var(--font-d, sans-serif); font-weight: 700; font-size: 0.78rem;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0.85rem 1.6rem;
+    background: var(--black, #0A0A0A); color: var(--ivory, #F5F0E8); border: none; cursor: pointer;
+    transition: background 0.18s;
+  }
+  .advisor-go:hover { background: var(--mid, #3D3D3D); }
+
+  .advisor-result { margin-top: 2rem; border-top: 1px solid var(--border, rgba(10,10,10,0.12)); padding-top: 1.75rem; }
+  .advisor-result-label {
+    font-family: var(--font-b, sans-serif); font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #888880); margin-bottom: 1.1rem;
+  }
+  .advisor-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .rec-card {
+    display: flex; flex-direction: column; gap: 0.4rem;
+    padding: 1.5rem; border: 1px solid var(--border, rgba(10,10,10,0.12));
+    background: var(--ivory, #F5F0E8); color: var(--black, #0A0A0A);
+    text-decoration: none; transition: transform 0.18s, border-color 0.18s;
+  }
+  .rec-card, .rec-card:visited { color: var(--black, #0A0A0A); }
+  .rec-card * { text-decoration: none; }
+  .rec-card:hover { transform: translateY(-2px); border-color: var(--sand-ink, #8F7340); }
+  .rec-card--primary, .rec-card--primary:visited { background: var(--black, #0A0A0A); color: var(--ivory, #F5F0E8); border-color: var(--black, #0A0A0A); }
+  .rec-rank {
+    font-family: var(--font-b, sans-serif); font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted, #888880);
+  }
+  .rec-card--primary .rec-rank { color: var(--sand, #C8B89A); }
+  .rec-tagline { font-family: var(--font-d, sans-serif); font-weight: 700; font-size: 1rem; color: var(--sand-ink, #8F7340); }
+  .rec-card--primary .rec-tagline { color: var(--sand, #C8B89A); }
+  .rec-name { font-family: var(--font-d, sans-serif); font-weight: 800; font-size: 2rem; letter-spacing: -0.03em; line-height: 1; color: inherit; }
+  .rec-line { font-family: var(--font-b, sans-serif); font-weight: 300; font-size: 0.875rem; line-height: 1.6; color: var(--mid, #3D3D3D); margin-top: 0.25rem; }
+  .rec-card--primary .rec-line { color: rgba(245,240,232,0.65); }
+  .rec-cta {
+    align-self: flex-start; display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 1.1rem; padding: 0.7rem 1.3rem;
+    font-family: var(--font-d, sans-serif); font-weight: 700; font-size: 0.72rem;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: var(--black, #0A0A0A); color: var(--ivory, #F5F0E8);
+    transition: background 0.18s;
+  }
+  .rec-card--primary .rec-cta { background: var(--ivory, #F5F0E8); color: var(--black, #0A0A0A); }
+  .rec-card:hover .rec-cta { background: var(--sand-ink, #8F7340); color: var(--ivory, #F5F0E8); }
+  .rec-card--primary:hover .rec-cta { background: var(--sand, #C8B89A); color: var(--black, #0A0A0A); }
+  .advisor-foot { font-family: var(--font-b, sans-serif); font-size: 0.85rem; font-weight: 300; color: var(--mid, #3D3D3D); margin-top: 1.25rem; }
+  .advisor-foot a, .advisor-foot a:visited { color: var(--black, #0A0A0A); font-weight: 500; text-decoration: none; border-bottom: 1px solid var(--sand, #C8B89A); }
+  .advisor-foot a:hover { border-bottom-color: var(--sand-ink, #8F7340); }
+
+  @media (max-width: 720px) {
+    .advisor-cards { grid-template-columns: 1fr; }
+    .advisor-go { flex: 1 1 100%; }
+  }
 </style>
+
+<script>
+  type PillarKey = 'nova' | 'talents' | 'edge' | 'solutions';
+
+  const PILLARS: Record<PillarKey, { name: string; tagline: string; href: string; line: string }> = {
+    nova:      { name: 'Nova',      tagline: 'A Team',    href: '/nova',      line: 'A dedicated team running your content operations end to end — on sprint, inside your tools.' },
+    talents:   { name: 'Talents',  tagline: 'A Person',  href: '/talents',   line: 'AI-trained senior creatives embedded in your team. You pay only for days worked.' },
+    edge:      { name: 'Edge',     tagline: 'A Program', href: '/edge',      line: 'Training and transformation designed as experience — so change actually sticks.' },
+    solutions: { name: 'Solutions',tagline: 'A Product', href: '/solutions', line: 'Custom AI tools and platforms, built with you from fast, measurable pilots.' },
+  };
+
+  const KEYWORDS: Record<PillarKey, string[]> = {
+    nova:      ['content','volume','always-on','always on','campaign','calendar','operation','production','channel','scale','ongoing','social','editorial','asset','launch','backlog','newsletter','localis','localiz'],
+    talents:   ['hire','hiring','headcount','person','people','freelance','recruit','designer','copywriter','art director','embed','staff','senior','skill','talent','cover','resource','maternity','add a'],
+    edge:      ['train','training','workshop','learn','adoption','culture','change','transform','event','hackathon','cx','customer experience','sales','engagement','program','onboard','upskill','enthusias','resist'],
+    solutions: ['build','tool','automation','automate','platform','product','software','integrat','pilot','workflow','app','api','plugin','dashboard','custom','efficiency'],
+  };
+
+  const KEYS: PillarKey[] = ['nova', 'talents', 'edge', 'solutions'];
+
+  function recommend(text: string): { primary: PillarKey; alt: PillarKey } {
+    const t = (text || '').toLowerCase();
+    const scores: Record<PillarKey, number> = { nova: 0, talents: 0, edge: 0, solutions: 0 };
+    for (const key of KEYS) {
+      for (const w of KEYWORDS[key]) { if (t.includes(w)) scores[key]++; }
+    }
+    const ranked = [...KEYS].sort((a, b) => scores[b] - scores[a]);
+    if (scores[ranked[0]] === 0) return { primary: 'nova', alt: 'talents' };
+    return { primary: ranked[0], alt: ranked[1] };
+  }
+
+  function fill(cardId: string, key: PillarKey): void {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    const p = PILLARS[key];
+    card.setAttribute('href', p.href);
+    const set = (sel: string, value: string) => {
+      const el = card.querySelector(sel);
+      if (el) el.textContent = value;
+    };
+    set('[data-field="tagline"]', p.tagline);
+    set('[data-field="name"]', p.name);
+    set('[data-field="line"]', p.line);
+    set('[data-field="cta"]', 'Explore ' + p.name + ' \u2197');
+  }
+
+  function show(primary: PillarKey, alt: PillarKey): void {
+    if (alt === primary) alt = primary === 'nova' ? 'talents' : 'nova';
+    fill('rec-primary', primary);
+    fill('rec-alt', alt);
+    const result = document.getElementById('advisor-result');
+    if (!result) return;
+    result.hidden = false;
+    result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  const chips = Array.from(document.querySelectorAll<HTMLElement>('.chip'));
+  chips.forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      chip.setAttribute('aria-pressed', 'true');
+      const primary = (chip.dataset.primary as PillarKey) || 'nova';
+      const alt = (chip.dataset.alt as PillarKey) || 'talents';
+      show(primary, alt);
+    });
+  });
+
+  const input = document.getElementById('advisor-input') as HTMLInputElement | null;
+  const go = document.getElementById('advisor-go') as HTMLButtonElement | null;
+  function runText(): void {
+    if (!input) return;
+    chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+    const { primary, alt } = recommend(input.value);
+    show(primary, alt);
+  }
+  go?.addEventListener('click', runText);
+  input?.addEventListener('keydown', (e) => { if (e.key === 'Enter') runText(); });
+</script>

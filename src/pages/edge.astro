@@ -1,5 +1,6 @@
 ---
 // src/pages/edge.astro
+import Logo from '../components/Logo.astro';
 ---
 
 <html lang="en">
@@ -15,7 +16,7 @@
     <style>
       :root {
         --black: #0A0A0A; --ivory: #F5F0E8; --white: #FFFFFF;
-        --sand: #C8B89A; --mid: #3D3D3D; --muted: #888880;
+        --sand: #C8B89A; --sand-ink: #8F7340; --orange: #FF6214; --mid: #3D3D3D; --muted: #888880;
         --border: rgba(10,10,10,0.12);
         --font-d: 'Syne', sans-serif; --font-b: 'Inter', sans-serif;
         --max: 1320px; --px: clamp(1.5rem, 5vw, 5rem); --py: clamp(4rem, 8vw, 8rem);
@@ -27,7 +28,8 @@
       .wrap { max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
 
       nav { position: fixed; inset: 0 0 auto 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.5rem var(--px); background: rgba(245,240,232,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-      .nav-logo { font-family: var(--font-d); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+      .nav-logo { display: inline-flex; align-items: center; color: var(--black); }
+      .nav-logo svg { display: block; height: 24px; width: auto; }
       .nav-links { display: flex; gap: 2.5rem; list-style: none; font-size: 0.85rem; font-weight: 500; }
       .nav-links a { opacity: 0.55; transition: opacity 0.2s; }
       .nav-links a:hover, .nav-links a.active { opacity: 1; }
@@ -35,8 +37,7 @@
       .nav-cta:hover { background: var(--mid); }
 
       .page-hero { padding-top: 10rem; padding-bottom: var(--py); padding-inline: var(--px); max-width: var(--max); margin-inline: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end; }
-      .page-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
-      .page-eyebrow::before { content: '03'; font-family: var(--font-d); font-weight: 800; font-size: 0.65rem; color: var(--sand); }
+      .page-eyebrow { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; text-transform: uppercase; color: var(--sand); margin-bottom: 1.25rem; line-height: 1; }
       .page-title { font-family: var(--font-d); font-weight: 800; font-size: clamp(3.5rem, 8vw, 8rem); letter-spacing: -0.04em; line-height: 0.9; }
       .page-title em { display: block; font-style: normal; font-size: clamp(1rem, 2vw, 1.5rem); font-weight: 400; letter-spacing: -0.01em; color: var(--muted); margin-top: 1rem; font-family: var(--font-b); }
       .page-standfirst { font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 300; line-height: 1.7; color: var(--mid); border-left: 2px solid var(--sand); padding-left: 1.5rem; }
@@ -48,17 +49,15 @@
       .content-body p + p { margin-top: 1.25rem; }
       .content-body strong { font-weight: 500; color: var(--black); }
 
-      /* FORMATS */
-      .formats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); margin-top: 3rem; border: 1px solid var(--border); }
-      .format-card { background: var(--white); padding: 1.75rem; }
-      .format-name { font-family: var(--font-d); font-weight: 700; font-size: 0.9rem; margin-bottom: 0.5rem; }
-      .format-desc { font-size: 0.8rem; font-weight: 300; line-height: 1.6; color: var(--mid); }
+      /* FORMATS (pillar-card style, separate) */
+      .formats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem; }
+      .format-card { background: var(--white); border-radius: 16px; padding: 2rem; display: flex; flex-direction: column; gap: 0.6rem; }
+      .format-name { font-family: var(--font-d); font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; line-height: 1.1; color: var(--sand-ink); }
+      .format-desc { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--mid); }
 
       /* VERTICALS */
       .verticals-section { padding-block: var(--py); background: var(--black); color: var(--ivory); }
       .verticals-inner { max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
-      .verticals-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 3rem; display: flex; align-items: center; gap: 1rem; }
-      .verticals-label::after { content: ''; flex: 1; height: 1px; background: rgba(245,240,232,0.1); }
       .verticals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
       .vertical-title { font-family: var(--font-d); font-weight: 800; font-size: clamp(1.5rem, 3vw, 2.5rem); letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 1.5rem; }
       .vertical-title em { font-style: normal; color: var(--sand); }
@@ -87,7 +86,8 @@
 
       footer { background: var(--black); color: var(--ivory); border-top: 1px solid rgba(245,240,232,0.08); }
       .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-block: 4rem; }
-      .footer-brand { font-family: var(--font-d); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+      .footer-brand { color: var(--ivory); margin-bottom: 0.75rem; }
+      .footer-brand svg { display: block; height: 30px; width: auto; }
       .footer-tagline { font-size: 0.85rem; font-weight: 300; color: rgba(245,240,232,0.4); line-height: 1.6; max-width: 26ch; }
       .footer-col-title { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 1.2rem; }
       .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
@@ -119,7 +119,7 @@
 
   <body>
     <nav>
-      <a href="/" class="nav-logo">Arkage</a>
+      <a href="/" class="nav-logo" aria-label="Arkage — home"><Logo height={24} /></a>
       <ul class="nav-links">
         <li><a href="/nova">Nova</a></li>
         <li><a href="/talents">Talents</a></li>
@@ -131,27 +131,21 @@
 
     <div class="page-hero">
       <div>
-        <p class="page-eyebrow">Engagement Model 03</p>
+        <p class="page-eyebrow">A Program</p>
         <h1 class="page-title">
           Edge
           <em>Transformation Programs</em>
         </h1>
       </div>
       <p class="page-standfirst">
-        Enthusiasm that unlocks change. Because people transform through experiences, not through slides. Learning designed as experience — built on an agile mindset and 25 years of communication craft.
+        Every company is mid-transformation — toward AI, new customer expectations, new ways of working — yet most run it as a training catalogue nobody's excited about. Edge starts elsewhere: information doesn't dissolve resistance, experience does.
       </p>
     </div>
 
-    <!-- THE PREMISE -->
+    <!-- WHAT WE OFFER -->
     <section class="content-section">
       <div class="wrap">
-        <div class="content-grid fade-up">
-          <p class="content-label">The premise</p>
-          <div class="content-body">
-            <p>Every company is mid-transformation — toward AI, toward new customer expectations, toward new ways of working. And in most of them, the transformation program is a training catalogue nobody is excited about.</p>
-            <p>Edge starts from a different premise, borrowed from psychologist Hugh Mackay: <strong>people are more likely to change in response to a combination of new experiences and communication than in response to communication alone.</strong> Rapid change generates resistance; information does not dissolve resistance, experience does.</p>
-          </div>
-        </div>
+        <p class="content-label">What we offer</p>
 
         <div class="formats-grid fade-up">
           <div class="format-card">
@@ -185,21 +179,18 @@
     <!-- VERTICALS -->
     <section class="verticals-section">
       <div class="verticals-inner">
-        <p class="verticals-label">Two deep verticals</p>
         <div class="verticals-grid">
           <div class="fade-up">
             <h2 class="vertical-title"><em>AI</em> Adoption</h2>
             <div class="vertical-body">
-              <p>Edge accompanies organizations along the whole AI adoption curve — from first curiosity to working fluency — with a cultural rather than technical approach. The entry point is the Prompt Coffee, our proprietary short-format session on the state of the art in AI, with co-creation moments that surface where AI matters for your business.</p>
-              <p>Governed by the Arkage AI Manifesto and its five commitments to quality, inclusivity, transparency, responsibility and security — with an expert in the loop on every process.</p>
+              <p>Edge moves organizations along the AI adoption curve — from curiosity to working fluency — with a cultural, not technical, approach. It starts with the Prompt Coffee, our short session on the state of the art, and runs under the Arkage AI Manifesto, with an expert in the loop on every process.</p>
             </div>
             <p class="vertical-highlight">AI robotic artist · 13,000 portraits for Mercedes-Benz · Italy's first AI-powered OOH campaign for Roma Capitale · Fendi's AI-made centennial cartoon</p>
           </div>
           <div class="fade-up">
             <h2 class="vertical-title">Customer <em>Experience</em></h2>
             <div class="vertical-body">
-              <p>Edge works along the CXPA® framework — from customer insights to culture and accountability. Arkage is the Italian co-founder of CXPA, supports professionals toward the CCXP® certification, and has developed CCI®, a proprietary methodology for measuring the customer-centricity of company staff, published in Harvard Business Review Italia.</p>
-              <p>Programs for Reale Mutua, Alleanza Assicurazioni, Ford and Autotorino have turned customer-centricity from a poster on the wall into measured, gamified, embraced behavior.</p>
+              <p>Edge works along the CXPA® framework — from customer insight to culture and accountability — turning customer-centricity from a poster on the wall into measured, embraced behavior. Programs delivered for Reale Mutua, Alleanza, Ford and Autotorino.</p>
             </div>
             <p class="vertical-highlight">CXPA Italian co-founder · CCI® methodology · HBR Italia published · CCXP® certification support</p>
           </div>
@@ -232,7 +223,7 @@
       <div class="wrap">
         <div class="footer-inner">
           <div>
-            <div class="footer-brand">Arkage</div>
+            <div class="footer-brand"><Logo height={30} /></div>
             <p class="footer-tagline">A creative platform — not an agency. Since 2000.</p>
           </div>
           <div>
@@ -256,9 +247,11 @@
           <div>
             <p class="footer-col-title">Connect</p>
             <ul class="footer-links">
-              <li><a href="https://instagram.com/arkage" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://it.linkedin.com/company/arkage" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://www.instagram.com/thearkage" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://www.linkedin.com/company/arkage/posts" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://open.spotify.com/show/676n4KaVFru2pYkr09UEPo" target="_blank" rel="noopener">On the Edge Podcast</a></li>
               <li><a href="/contact">Get in touch</a></li>
+              <li><a href="https://www.linkedin.com/company/arkage/jobs/" target="_blank" rel="noopener">See open positions</a></li>
             </ul>
           </div>
         </div>

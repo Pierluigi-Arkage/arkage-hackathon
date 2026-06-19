@@ -1,5 +1,6 @@
 ---
 // src/pages/nova.astro
+import Logo from '../components/Logo.astro';
 ---
 
 <html lang="en">
@@ -15,7 +16,7 @@
     <style>
       :root {
         --black: #0A0A0A; --ivory: #F5F0E8; --white: #FFFFFF;
-        --sand: #C8B89A; --mid: #3D3D3D; --muted: #888880;
+        --sand: #C8B89A; --sand-ink: #8F7340; --orange: #FF6214; --mid: #3D3D3D; --muted: #888880;
         --border: rgba(10,10,10,0.12);
         --font-d: 'Syne', sans-serif; --font-b: 'Inter', sans-serif;
         --max: 1320px; --px: clamp(1.5rem, 5vw, 5rem); --py: clamp(4rem, 8vw, 8rem);
@@ -34,7 +35,8 @@
         background: rgba(245,240,232,0.9); backdrop-filter: blur(12px);
         border-bottom: 1px solid var(--border);
       }
-      .nav-logo { font-family: var(--font-d); font-weight: 800; font-size: 1.2rem; letter-spacing: -0.02em; }
+      .nav-logo { display: inline-flex; align-items: center; color: var(--black); }
+      .nav-logo svg { display: block; height: 24px; width: auto; }
       .nav-links { display: flex; gap: 2.5rem; list-style: none; font-size: 0.85rem; font-weight: 500; }
       .nav-links a { opacity: 0.55; transition: opacity 0.2s; }
       .nav-links a:hover, .nav-links a.active { opacity: 1; }
@@ -47,8 +49,7 @@
         padding-inline: var(--px); max-width: var(--max); margin-inline: auto;
         display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: end;
       }
-      .page-eyebrow { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
-      .page-eyebrow::before { content: '01'; font-family: var(--font-d); font-weight: 800; font-size: 0.65rem; color: var(--sand); }
+      .page-eyebrow { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; color: var(--sand); margin-bottom: 1.25rem; line-height: 1; text-transform: uppercase; }
       .page-title { font-family: var(--font-d); font-weight: 800; font-size: clamp(3.5rem, 8vw, 8rem); letter-spacing: -0.04em; line-height: 0.9; }
       .page-title em { display: block; font-style: normal; font-size: clamp(1rem, 2vw, 1.5rem); font-weight: 400; letter-spacing: -0.01em; color: var(--muted); margin-top: 1rem; font-family: var(--font-b); }
       .page-standfirst { font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 300; line-height: 1.7; color: var(--mid); border-left: 2px solid var(--sand); padding-left: 1.5rem; }
@@ -61,11 +62,34 @@
       .content-body p + p { margin-top: 1.25rem; }
       .content-body strong { font-weight: 500; color: var(--black); }
 
-      /* WHAT WE DO */
-      .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem; }
-      .service-card { padding: 2rem; background: var(--white); border: 1px solid var(--border); }
-      .service-title { font-family: var(--font-d); font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem; }
-      .service-desc { font-size: 0.875rem; font-weight: 300; line-height: 1.65; color: var(--mid); }
+      /* WHAT WE DO — VIDEO */
+      .video-section {
+        position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        width: 100vw; height: clamp(440px, 74vh, 780px); overflow: hidden;
+        background: var(--black); display: flex; align-items: center;
+      }
+      .video-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+      .video-section::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10,10,10,0.45), rgba(10,10,10,0.05) 60%); }
+      .video-overlay { position: relative; z-index: 1; width: 100%; max-width: var(--max); margin-inline: auto; padding-inline: var(--px); }
+      .video-headline {
+        font-family: var(--font-d); font-weight: 800;
+        font-size: clamp(3rem, 11vw, 10rem); line-height: 0.88; letter-spacing: -0.04em;
+        color: rgba(255,255,255,0.82);
+      }
+
+      /* SERVICES (pillar-card style) */
+      .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+      .service-card {
+        display: flex; flex-direction: column; gap: 0.75rem;
+        padding: 2.5rem 2rem; background: var(--white); border-radius: 16px;
+      }
+      .service-num { font-family: var(--font-d); font-weight: 700; font-size: 0.65rem; letter-spacing: 0.1em; color: var(--muted); }
+      .service-title { font-family: var(--font-d); font-weight: 800; font-size: 1.65rem; letter-spacing: -0.02em; line-height: 1.05; color: var(--sand-ink); }
+      .service-desc { font-size: 0.9rem; font-weight: 300; line-height: 1.7; color: var(--mid); margin-top: 0.25rem; }
+      @media (prefers-reduced-motion: no-preference) {
+        .services-grid .service-card.fade-up:nth-child(2) { transition-delay: 0.1s; }
+        .services-grid .service-card.fade-up:nth-child(3) { transition-delay: 0.2s; }
+      }
 
       /* PROOF / CLIENTS */
       .proof-section { padding-block: var(--py); background: var(--black); color: var(--ivory); }
@@ -95,7 +119,8 @@
       /* FOOTER */
       footer { background: var(--black); color: var(--ivory); border-top: 1px solid rgba(245,240,232,0.08); }
       .footer-inner { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-block: 4rem; }
-      .footer-brand { font-family: var(--font-d); font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
+      .footer-brand { color: var(--ivory); margin-bottom: 0.75rem; }
+      .footer-brand svg { display: block; height: 30px; width: auto; }
       .footer-tagline { font-size: 0.85rem; font-weight: 300; color: rgba(245,240,232,0.4); line-height: 1.6; max-width: 26ch; }
       .footer-col-title { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,240,232,0.35); margin-bottom: 1.2rem; }
       .footer-links { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; }
@@ -125,7 +150,7 @@
 
   <body>
     <nav>
-      <a href="/" class="nav-logo">Arkage</a>
+      <a href="/" class="nav-logo" aria-label="Arkage — home"><Logo height={24} /></a>
       <ul class="nav-links">
         <li><a href="/nova" class="active">Nova</a></li>
         <li><a href="/talents">Talents</a></li>
@@ -138,27 +163,25 @@
     <!-- HERO -->
     <div class="page-hero">
       <div>
-        <p class="page-eyebrow">Engagement Model 01</p>
+        <p class="page-eyebrow">A Team</p>
         <h1 class="page-title">
           Nova
           <em>Enterprise Content Operations</em>
         </h1>
       </div>
       <p class="page-standfirst">
-        Your content operations, run as if we were part of your organization. Because, in every way that matters, we are. One accountable partner where you used to have a coordination job.
+        Enterprise content doesn't end. Launches, editorial calendars, internal comms and portal updates pile up every week — each asset bound by brand, platform and accessibility rules. Nova runs that operation end to end, so your team stops gluing vendors together.
       </p>
     </div>
 
-    <!-- THE PROBLEM -->
-    <section class="content-section">
-      <div class="wrap">
-        <div class="content-grid fade-up">
-          <p class="content-label">The problem</p>
-          <div class="content-body">
-            <p>Enterprise content has a problem that campaigns never had: it does not end. Product launches stack onto editorial calendars, internal communications stack onto portal updates, and every asset must respect brand guidelines, platform constraints, accessibility standards and a dozen stakeholders' opinions — every week, all year.</p>
-            <p>Most companies solve this with a patchwork of vendors and an exhausted internal team gluing them together. Nova exists to replace the patchwork.</p>
-          </div>
-        </div>
+    <!-- WHAT WE DO (video) -->
+    <section class="video-section">
+      <!-- Showreel servito da thearkage.com -->
+      <video class="video-bg" autoplay muted loop playsinline aria-hidden="true">
+        <source src="https://thearkage.com/media/arkage_showreel_no_bande.mp4" type="video/mp4" />
+      </video>
+      <div class="video-overlay">
+        <h2 class="video-headline">What<br />We<br />Do</h2>
       </div>
     </section>
 
@@ -168,23 +191,25 @@
         <div class="content-grid fade-up">
           <p class="content-label">How it works</p>
           <div class="content-body">
-            <p>Nova is a dedicated, stable team — project management, design, copywriting and development — that takes responsibility for a defined territory of your content operations and runs it end to end. Not a rotating cast of account people: <strong>the same group, inside your tools, your platforms and your visibility calendar, sprint after sprint.</strong></p>
-            <p>We coordinate your internal stakeholders and your external suppliers, monitor the agreed schedule, produce every creative asset, control quality and implement directly in your systems.</p>
+            <p>We coordinate your internal stakeholders and your external suppliers, monitor the agreed schedule, produce every creative asset, control quality and implement directly in your systems — the same group, inside your tools, sprint after sprint.</p>
           </div>
         </div>
 
-        <div class="services-grid fade-up">
-          <div class="service-card">
+        <div class="services-grid">
+          <div class="service-card fade-up">
+            <span class="service-num">01</span>
             <p class="service-title">Creativity</p>
-            <p class="service-desc">Concepts, design and copywriting for B2B and B2C — landing pages for global product launches, editorial features, special newsletters and executive-facing formats such as quarterly e-magazines.</p>
+            <p class="service-desc">Concepts, design and copywriting — from global launch landing pages to editorial features and executive e-magazines.</p>
           </div>
-          <div class="service-card">
+          <div class="service-card fade-up">
+            <span class="service-num">02</span>
             <p class="service-title">Campaign Amplification</p>
-            <p class="service-desc">Key-visual adaptation and asset versioning at scale, brand and campaign guideline documents, playbooks, and creative assets for programmatic, CRM, paid social and in-store channels — with WCAG accessibility compliance when required.</p>
+            <p class="service-desc">Key-visual adaptation and asset versioning at scale, brand playbooks, and creative for programmatic, CRM, paid social and in-store.</p>
           </div>
-          <div class="service-card">
+          <div class="service-card fade-up">
+            <span class="service-num">03</span>
             <p class="service-title">End-to-End Management</p>
-            <p class="service-desc">Running the activity calendar of entire platforms, from intranet portals to corporate communication systems, including supplier and translation coordination and direct execution in enterprise marketing tools.</p>
+            <p class="service-desc">Running whole platform calendars — from intranet portals to corporate comms — including supplier coordination and direct execution.</p>
           </div>
         </div>
       </div>
@@ -193,14 +218,10 @@
     <!-- PROOF -->
     <section class="proof-section">
       <div class="proof-inner">
-        <p class="proof-label">Proven at enterprise scale</p>
-        <h2 class="proof-headline fade-up">Ten years with <em>EssilorLuxottica</em>.</h2>
+        <h2 class="proof-headline fade-up">Case Study — <em>EssilorLuxottica</em>.</h2>
         <div class="proof-body fade-up">
-          <p>We did not design this model on a whiteboard; it grew out of more than ten years of partnership with EssilorLuxottica, the global leader in eyewear and lens technology. For over four years a Nova team has managed activities on the Group's global B2B portal — coordinating brand managers, marketing teams and suppliers, and designing the landing pages for worldwide launches such as Ray-Ban | Meta, the Ray-Ban Reverse collaboration with Lenny Kravitz, Tiffany's collaboration with Aron Piper and Nuance Audio.</p>
-          <p>The same team supports corporate internal communications for tens of thousands of employees, from weekly calendar governance to campaign execution in SAP Marketing Cloud.</p>
-          <p>That experience taught us what enterprise content really demands: <strong style="color: var(--ivory)">reliability before brilliance — and brilliance anyway.</strong></p>
+          <p>For over four years a Nova team has run EssilorLuxottica's global B2B portal — coordinating brand managers, marketing teams and suppliers, building the launch pages for Ray-Ban | Meta, the Lenny Kravitz Reverse collaboration, Tiffany with Aron Piper and Nuance Audio — while supporting internal comms for tens of thousands of employees. <strong style="color: var(--ivory)">Reliability before brilliance — and brilliance anyway.</strong></p>
         </div>
-        <p class="proof-closing">Engage a team. Keep the control. Lose the coordination overhead.</p>
       </div>
     </section>
 
@@ -231,7 +252,7 @@
       <div class="wrap">
         <div class="footer-inner">
           <div>
-            <div class="footer-brand">Arkage</div>
+            <div class="footer-brand"><Logo height={30} /></div>
             <p class="footer-tagline">A creative platform — not an agency. Since 2000.</p>
           </div>
           <div>
@@ -255,9 +276,11 @@
           <div>
             <p class="footer-col-title">Connect</p>
             <ul class="footer-links">
-              <li><a href="https://instagram.com/arkage" target="_blank" rel="noopener">Instagram</a></li>
-              <li><a href="https://it.linkedin.com/company/arkage" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://www.instagram.com/thearkage" target="_blank" rel="noopener">Instagram</a></li>
+              <li><a href="https://www.linkedin.com/company/arkage/posts" target="_blank" rel="noopener">LinkedIn</a></li>
+              <li><a href="https://open.spotify.com/show/676n4KaVFru2pYkr09UEPo" target="_blank" rel="noopener">On the Edge Podcast</a></li>
               <li><a href="/contact">Get in touch</a></li>
+              <li><a href="https://www.linkedin.com/company/arkage/jobs/" target="_blank" rel="noopener">See open positions</a></li>
             </ul>
           </div>
         </div>
